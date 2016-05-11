@@ -40,13 +40,14 @@ class AvroSnappyIO(object):
         data: an array of JSONs
         repartitionNumer: [optional] the number of partitions used to write the output file
         """
+        print "PRINTINGGG"
         if not self.sqlc or not self.sc:
             raise Exception("Both Spark Context and SQLContext must be available")
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
+        self.sqlc.setConf("spark.sql.avro.compression.codec", "snappy")
         if repartitionNumber:
             if repartitionNumber < 1:
                 repartitionNumber = 1
-            self.sqlc.setConf("spark.sql.avro.compression.codec", "snappy")
             jsonDocsDF.repartition(repartitionNumber).write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
         else:
             jsonDocsDF.write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
